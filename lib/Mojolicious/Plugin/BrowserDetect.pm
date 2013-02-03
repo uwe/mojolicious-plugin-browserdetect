@@ -2,26 +2,25 @@ package Mojolicious::Plugin::BrowserDetect;
 
 # ABSTRACT: HTTP::BrowserDetect integration for Mojolicious
 
-use base 'Mojolicious::Plugin';
+use Mojo:Base 'Mojolicious::Plugin';
 
 use HTTP::BrowserDetect;
-
 
 sub register {
     my ($self, $app, $conf) = @_;
 
-    my $browser;
-    $app->hook(
-        before_dispatch => sub {
-            my ($c) = @_;
-            $browser = HTTP::BrowserDetect->new(
-                $c->req->headers->user_agent,
-            );
-        },
-    );
-
-    $app->helper(browser => sub { $browser });
-}
+  $app->helper(
+    browser => sub {
+      my $c = shift;
+      unless ($c->stash('BrowserDetect')) {
+        $c->stash(BrowserDetect => HTTP::BrowserDetect->new(
+          shift->req->headers->user_agent
+        );
+      };
+      return $c->stash('BrowserDetect');
+    }
+  ); 
+};
 
 1;
 
